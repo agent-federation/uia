@@ -1,14 +1,17 @@
 /**
  * Sync checks for the CORE-001 contract project (consumer-owned, E1).
  *
- * Verifies, without the engine checkout, that:
+ * Verifies that:
  *  1. every dependency declared by the profile manifest (profiles/core001/profile.json)
- *     matches the version pinned in package.json;
+ *     matches the version pinned in the consumer package.json;
  *  2. contracts/core-001/engine.lock.json pins the repository/version recorded in the
- *     manifest (engine HEAD drift is caught by `core001:check` building with the
- *     materialized pinned checkout).
+ *     manifest, and the engine HEAD/version match the lock (via the harness's own pin
+ *     enforcement at build time);
+ *  3. each declared dependency resolves to the same version in the pinned engine's
+ *     bun.lock as in the consumer package.json (the cross-lock invariant).
  *
- * Exit code 1 on any mismatch, so it can run in CI as a plain command.
+ * Requires the engine checkout to be materialized (CI materializes it first; locally see
+ * contracts/core-001/README.md). Exit code 1 on any mismatch, so it can run in CI.
  */
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -26,10 +29,40 @@ interface EngineLock {
   repository: string;
   commit: string;
   version: string;
+  checkout: string;
 }
 
 async function readJson(rel: string): Promise<unknown> {
   return JSON.parse(await readFile(path.join(REPO_ROOT, rel), 'utf8'));
+}
+
+/** Same candidate order as contracts/core-001/run.ts resolveEngineRoot(). */
+async function resolveEngineRoot(lock: EngineLock): Promise<string> {
+  const candidates = [
+    process.env.UIA_ENGINE_ROOT ?? '',
+    path.resolve(REPO_ROOT, 'contracts', 'core-001', lock.checkout),
+    path.resolve(REPO_ROOT, '..', 'contract-builder'),
+  ].filter((candidate) => candidate.length > 0);
+  for (const candidate of candidates) {
+    for (const buildLib of ['build.ts', 'build.js']) {
+      try {
+        await readFile(path.join(candidate, 'spec', 'lib', buildLib));
+        return candidate;
+      } catch {
+        // try the next candidate / variant
+      }
+    }
+  }
+  throw new Error(
+    `engine checkout not found; materialize it first (contracts/core-001/README.md), ` +
+      `checked: ${candidates.join(', ')}`,
+  );
+}
+
+/** Extracts the resolved version of a package from a bun.lock text-format lockfile. */
+function resolvedVersionFromBunLock(bunLock: string, name: string): string | undefined {
+  const entry = bunLock.match(new RegExp(`"${name}":\\s*\\["${name}@([^"]+)"`));
+  return entry?.[1];
 }
 
 async function main(): Promise<number> {
@@ -62,9 +95,28 @@ async function main(): Promise<number> {
     fail(`engine.lock.json commit is not a full 40-hex SHA: ${lock.commit}`);
   }
 
+  if (!failed) {
+    // Cross-lock invariant: the pinned engine must resolve each declared dependency to the
+    // same version the consumer pins (e.g. nunjucks 3.2.4 in both bun.lock files).
+    try {
+      const engineRoot = await resolveEngineRoot(lock);
+      const bunLock = await readFile(path.join(engineRoot, 'bun.lock'), 'utf8');
+      for (const [name, declared] of Object.entries(profile.dependencies ?? {})) {
+        const resolved = resolvedVersionFromBunLock(bunLock, name);
+        if (resolved === undefined) {
+          fail(`engine bun.lock does not resolve "${name}"`);
+        } else if (resolved !== declared) {
+          fail(`"${name}" resolves to ${resolved} in the pinned engine, consumer pins ${declared}`);
+        }
+      }
+    } catch (error) {
+      fail(error instanceof Error ? error.message : String(error));
+    }
+  }
+
   if (failed) return 1;
   console.log(
-    `OK: profile dependencies match package.json; engine lock pins ${lock.repository}@${lock.commit.slice(0, 7)} (v${lock.version})`,
+    `OK: profile dependencies match package.json and the pinned engine bun.lock; engine lock pins ${lock.repository}@${lock.commit.slice(0, 7)} (v${lock.version})`,
   );
   return 0;
 }

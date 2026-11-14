@@ -1,9 +1,9 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
-import { SEVERITY_LABEL, type Diagnostic, type Severity } from '../../contract-builder/spec/lib/diagnostics.js';
-import type { ProjectModel } from '../../contract-builder/spec/lib/ir.js';
-import { artifactFrom, type RenderOptions, type Renderer } from '../../contract-builder/spec/lib/render.js';
+import { SEVERITY_LABEL, type Diagnostic, type Severity } from '../../spec/lib/diagnostics.js';
+import type { ProjectModel } from '../../spec/lib/ir.js';
+import { artifactFrom, type RenderOptions, type Renderer } from '../../spec/lib/render.js';
 import {
   buildView,
   type AnalyzedProvision,

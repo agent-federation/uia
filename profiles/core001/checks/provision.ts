@@ -1,4 +1,4 @@
-import type { ValidatorFinding } from '../../../contract-builder/spec/lib/hook.js';
+import type { ValidatorFinding } from '../../../spec/lib/hook.js';
 import type { AnalyzedProvision, Clause, NormativeEffect, Provision, SourceModality } from '../view.js';
 import type { Check, CheckContext } from '../context.js';
 import { collapse, normalizeText } from '../text.js';

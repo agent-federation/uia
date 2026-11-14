@@ -1,6 +1,6 @@
-import type { VerificationContext } from '../../../contract-builder/spec/lib/hook.js';
-import type { ProjectModel } from '../../../contract-builder/spec/lib/ir.js';
-import type { ProvenanceVerificationClaim } from '../../../contract-builder/spec/lib/provenance.js';
+import type { VerificationContext } from '../../../spec/lib/hook.js';
+import type { ProjectModel } from '../../../spec/lib/ir.js';
+import type { ProvenanceVerificationClaim } from '../../../spec/lib/provenance.js';
 import { collapse } from '../text.js';
 
 /** Identifies the profile verifier in every record it produces. */

@@ -1,5 +1,5 @@
-import type { ValidatorFinding } from '../../../contract-builder/spec/lib/hook.js';
-import type { ProvenanceVerification } from '../../../contract-builder/spec/lib/ir.js';
+import type { ValidatorFinding } from '../../../spec/lib/hook.js';
+import type { ProvenanceVerification } from '../../../spec/lib/ir.js';
 import type { Check, CheckContext } from '../context.js';
 import { sectionInSlice } from '../slice.js';
 

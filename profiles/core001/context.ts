@@ -1,5 +1,5 @@
-import type { ValidatorFinding } from '../../contract-builder/spec/lib/hook.js';
-import type { ProjectModel } from '../../contract-builder/spec/lib/ir.js';
+import type { ValidatorFinding } from '../../spec/lib/hook.js';
+import type { ProjectModel } from '../../spec/lib/ir.js';
 import type { AnalyzedSpec } from './view.js';
 
 export interface CheckContext {

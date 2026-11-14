@@ -7,6 +7,7 @@
     "noEmit": true,
     "outDir": "build",
     "rootDir": ".",
+    "rootDirs": [".", "contract-builder", "../contract-builder"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
