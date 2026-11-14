@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -173,8 +173,17 @@ const legacyPath = path.join(root, 'docs', 'CORE-001.md');
  * `../../spec/lib/...` imports stay project-relative and are resolved from the engine root
  * by the build (no source rewriting).
  */
+/** Temp dirs handed out by this module; suites remove them via cleanupTempDirs() in after(). */
+const tempDirs: string[] = [];
+
+export async function cleanupTempDirs(): Promise<void> {
+  await Promise.all(tempDirs.map((dir) => rm(dir, { recursive: true, force: true })));
+  tempDirs.length = 0;
+}
+
 export async function copyProjectWithProfile(name: string): Promise<string> {
   const dir = await mkdtemp(path.join(tmpdir(), `hook-${name}-`));
+  tempDirs.push(dir);
   for (const file of ['contract-builder.json', 'sources.yml', 'ontology.yml', 'semantics.json', 'decisions.yml']) {
     await cp(path.join(projectDir, file), path.join(dir, file));
   }

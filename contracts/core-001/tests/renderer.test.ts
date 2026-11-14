@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -12,6 +12,7 @@ import {
 import { renderer } from '../../../profiles/core001/renderer.js';
 import { gateConclusion } from '../../../contract-builder/profiles/core000/renderer.js';
 import {
+  cleanupTempDirs,
   copyProjectWithProfile,
   ENGINE_ROOT,
   entity,
@@ -23,6 +24,10 @@ import {
   TEST_IDENTITY,
   TEST_RENDERERS,
 } from './support.js';
+
+after(async () => {
+  await cleanupTempDirs();
+});
 
 const base = (dir: string, overrides: Partial<BuildOptions> = {}): BuildOptions => ({
   specDir: dir,

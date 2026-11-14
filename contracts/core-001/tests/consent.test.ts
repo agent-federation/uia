@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -11,7 +11,11 @@ import { validateProfileClosure } from '../../../contract-builder/spec/lib/ident
 import { loadManifest } from '../../../contract-builder/spec/lib/manifest.js';
 import type { Renderer } from '../../../contract-builder/spec/lib/render.js';
 import { loadProfileRenderers } from '../../../contract-builder/spec/cli-renderers.js';
-import { copyProjectWithProfile, ENGINE_ROOT, TEST_RENDERERS } from './support.js';
+import { cleanupTempDirs, copyProjectWithProfile, ENGINE_ROOT, TEST_RENDERERS } from './support.js';
+
+after(async () => {
+  await cleanupTempDirs();
+});
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const cliPath = path.join(root, 'contract-builder', 'spec', 'build.ts');

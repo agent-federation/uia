@@ -1,6 +1,6 @@
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -11,6 +11,13 @@ import { ENGINE_ROOT, TEST_RENDERERS } from './support.js';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const specDir = path.join(root, 'contracts', 'core-001');
+
+// copySpec temp workspaces; removed after the suite so they don't leak in the OS tmp.
+const tempDirs: string[] = [];
+
+after(async () => {
+  await Promise.all(tempDirs.map((dir) => rm(dir, { recursive: true, force: true })));
+});
 const fixture = (name: string) => path.join(root, 'contracts', 'core-001', 'fixtures', name, 'spec');
 
 const base = (overrides: Partial<BuildOptions> = {}): BuildOptions => ({
@@ -214,7 +221,7 @@ test('целостность: дубликат ID — ERR_DUPLICATE_ID', async (
 });
 
 test('покрытие: у каждого положения есть вектор, violated не выводится из разрешения', async () => {
-  const semantics = parseYaml(await readFile(path.join(specDir, 'semantics.json'), 'utf8')) as {
+  const semantics = JSON.parse(await readFile(path.join(specDir, 'semantics.json'), 'utf8')) as {
     provisions: Array<{ id: string }>;
   };
   const cases = parseYaml(await readFile(path.join(specDir, 'conformance', 'cases.yml'), 'utf8')) as {
@@ -465,6 +472,7 @@ test('вывод: ошибка записи артефакта — диагно�
 
 async function copySpec(name: string, mutateLegacy?: (text: string) => string): Promise<string> {
   const dir = await mkdtemp(path.join(tmpdir(), `spec-${name}-`));
+  tempDirs.push(dir);
   for (const file of ['contract-builder.json', 'sources.yml', 'ontology.yml', 'semantics.json', 'decisions.yml']) {
     await cp(path.join(specDir, file), path.join(dir, file));
   }

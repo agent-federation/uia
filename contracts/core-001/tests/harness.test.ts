@@ -8,7 +8,7 @@
  */
 import { execFile as execFileCb, spawnSync } from 'node:child_process';
 import { hash } from 'node:crypto';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { expect, test } from 'bun:test';
@@ -41,24 +41,28 @@ test('identity: docs/CORE-001.md is the canonical CORE-001 Rev 0.3.3 source', as
 
 test('pin: a checkout whose HEAD differs from the lock is rejected', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'uia-pin-stale-'));
-  await mkdir(path.join(dir, 'spec', 'lib'), { recursive: true });
-  await writeFile(path.join(dir, 'spec', 'lib', 'build.ts'), 'export {};\n');
-  await writeFile(path.join(dir, 'package.json'), JSON.stringify({ version: '0.1.0' }));
-  await execFile('git', ['init', dir]);
-  await execFile('git', ['-C', dir, 'config', 'user.email', 't@example.invalid']);
-  await execFile('git', ['-C', dir, 'config', 'user.name', 't']);
-  await execFile('git', ['-C', dir, 'add', '-A']);
-  await execFile('git', ['-C', dir, 'commit', '-m', 'stale', '--quiet']);
-  const head = await execFile('git', ['-C', dir, 'rev-parse', 'HEAD']);
-
-  let message = '';
   try {
-    await verifyEnginePin(dir, { commit: '0'.repeat(64), version: '0.1.0' });
-  } catch (error) {
-    message = error instanceof Error ? error.message : String(error);
+    await mkdir(path.join(dir, 'spec', 'lib'), { recursive: true });
+    await writeFile(path.join(dir, 'spec', 'lib', 'build.ts'), 'export {};\n');
+    await writeFile(path.join(dir, 'package.json'), JSON.stringify({ version: '0.1.0' }));
+    await execFile('git', ['init', dir]);
+    await execFile('git', ['-C', dir, 'config', 'user.email', 't@example.invalid']);
+    await execFile('git', ['-C', dir, 'config', 'user.name', 't']);
+    await execFile('git', ['-C', dir, 'add', '-A']);
+    await execFile('git', ['-C', dir, 'commit', '-m', 'stale', '--quiet']);
+    const head = await execFile('git', ['-C', dir, 'rev-parse', 'HEAD']);
+
+    let message = '';
+    try {
+      await verifyEnginePin(dir, { commit: '0'.repeat(64), version: '0.1.0' });
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+    expect(message).toContain('does not match engine.lock.json');
+    expect(message).toContain(`HEAD is ${head.slice(0, 7)}`);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
   }
-  expect(message).toContain('does not match engine.lock.json');
-  expect(message).toContain(`HEAD is ${head.slice(0, 7)}`);
 });
 
 test('pin: a version mismatch is rejected even at the pinned commit', async () => {
@@ -88,18 +92,22 @@ test('artifact rule: run.ts --check fails closed on a stale UIA_ENGINE_ROOT', as
   // A checkout that looks valid (build lib present, matching version) but whose HEAD is
   // not the pinned commit must abort the check, not silently produce a "matching" result.
   const dir = await mkdtemp(path.join(tmpdir(), 'uia-pin-stale-e2e-'));
-  await mkdir(path.join(dir, 'spec', 'lib'), { recursive: true });
-  await writeFile(path.join(dir, 'spec', 'lib', 'build.ts'), 'export {};\n');
-  await writeFile(path.join(dir, 'package.json'), JSON.stringify({ version: '0.1.0' }));
-  await execFile('git', ['init', dir]);
-  await execFile('git', ['-C', dir, 'config', 'user.email', 't@example.invalid']);
-  await execFile('git', ['-C', dir, 'config', 'user.name', 't']);
-  await execFile('git', ['-C', dir, 'add', '-A']);
-  await execFile('git', ['-C', dir, 'commit', '-m', 'stale', '--quiet']);
+  try {
+    await mkdir(path.join(dir, 'spec', 'lib'), { recursive: true });
+    await writeFile(path.join(dir, 'spec', 'lib', 'build.ts'), 'export {};\n');
+    await writeFile(path.join(dir, 'package.json'), JSON.stringify({ version: '0.1.0' }));
+    await execFile('git', ['init', dir]);
+    await execFile('git', ['-C', dir, 'config', 'user.email', 't@example.invalid']);
+    await execFile('git', ['-C', dir, 'config', 'user.name', 't']);
+    await execFile('git', ['-C', dir, 'add', '-A']);
+    await execFile('git', ['-C', dir, 'commit', '-m', 'stale', '--quiet']);
 
-  const result = runHarness({ UIA_ENGINE_ROOT: dir });
-  expect(result.status).not.toBe(0);
-  expect(result.stderr).toContain('does not match engine.lock.json');
+    const result = runHarness({ UIA_ENGINE_ROOT: dir });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('does not match engine.lock.json');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
 
 test('artifact rule: the committed artifact hash matches the recorded golden', async () => {
