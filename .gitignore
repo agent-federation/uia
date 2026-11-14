@@ -9,3 +9,6 @@ build/
 # it must never be committed as a gitlink. The entry also covers a local
 # symlink placed at this path for editor/typecheck resolution.
 contract-builder
+# Runtime resolution of engine-owned imports in profiles/core001 (`../../spec/lib/...`):
+# tsc resolves them through tsconfig rootDirs; bun needs the same view at the repo root.
+/spec

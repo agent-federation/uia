@@ -35,6 +35,22 @@ HEAD and package version match `engine.lock.json`. For unpinned development (rar
 `UIA_ALLOW_UNPINNED_ENGINE=1` — mismatches are then warnings, and the artifact output
 must not be committed.
 
+## Tests
+
+The CORE-001 project suite (moved from `contract-builder` in E2, issue #80) lives in
+`tests/` and runs as part of `bun test`. It needs the materialized engine checkout plus a
+root `spec -> contract-builder/spec` symlink, because the tests import profile modules
+directly and bun resolves their authored `../../spec/lib/...` engine imports from the repo
+root (tsc uses the `rootDirs` bridge instead):
+
+```bash
+ln -s contract-builder/spec spec
+bun test contracts/core-001/tests
+```
+
+`tests/golden/core001.draft.sha256` records the committed artifact's hash — the artifact
+rule in CI (and the golden test) fails on any stale or hand-edited artifact.
+
 ## Invariants
 
 - **D7 byte identity**: the committed `output/CORE-001.draft.md` differs from the
