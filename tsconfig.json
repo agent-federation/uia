@@ -7,6 +7,7 @@
     "noEmit": true,
     "outDir": "build",
     "rootDir": ".",
+    "rootDirs": [".", "contract-builder", "../contract-builder"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,6 +17,6 @@
     "sourceMap": true,
     "types": ["bun", "node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["node_modules", "build"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "contracts/**/*.ts", "profiles/**/*.ts"],
+  "exclude": ["node_modules", "build", "contract-builder"]
 }
