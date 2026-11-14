@@ -13,6 +13,11 @@ import type { Renderer } from '../../../contract-builder/spec/lib/render.js';
  * presentation elements (document identity, generated/source-of-truth notice, build mode and
  * scope/exclusions, profile/renderer/build identity, diagnostic/gating summary) while keeping
  * its profile-specific body. These are artifact tests, not a shared template.
+ *
+ * The CORE-000 artifact is used deliberately as the cross-profile control group: the envelope
+ * contract only means something if it holds for more than one profile, and comparing CORE-001
+ * against CORE-000 proves the shared elements come from the engine envelope, not from CORE-001
+ * specifics. CORE-000's own renderer/gate behavior stays tested in the engine's suite.
  */
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
