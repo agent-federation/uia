@@ -39,7 +39,7 @@ jobs:
           commit="$(jq -r .commit contracts/core-001/engine.lock.json)"
           git clone --quiet "https://github.com/${repo}" contract-builder
           git -C contract-builder checkout --quiet "${commit}"
-          cd contract-builder && bun install --frozen-lockfile --ignore-scripts
+          (cd contract-builder && bun install --frozen-lockfile --ignore-scripts)
           # The moved CORE-001 tests import profile modules directly; bun resolves their
           # authored `../../spec/lib/...` engine imports at runtime through this root link
           # (tsc resolves the same imports via the tsconfig rootDirs bridge).
