@@ -56,7 +56,7 @@ export const renderer: Renderer = {
     env.addFilter('blockquote', (value: unknown) => {
       if (value == null) return '';
       return String(value)
-        .split('\n')
+        .split(/\r?\n/)
         .map((line) => (line.length > 0 ? `> ${line}` : '>'))
         .join('\n');
     });

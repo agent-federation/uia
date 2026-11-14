@@ -55,13 +55,18 @@ async function resolveEngineRoot(lock: EngineLock): Promise<string> {
     path.resolve(REPO_ROOT, '..', 'contract-builder'),
   ].filter((candidate) => candidate.length > 0);
   for (const candidate of candidates) {
-    const buildLib = path.join(candidate, 'spec', 'lib', 'build.ts');
-    try {
-      await readFile(buildLib);
-      return candidate;
-    } catch {
-      // try the next candidate
-    }
+    // Accept both a source (build.ts) and a compiled (build.js) engine checkout; the
+    // runtime imports spec/lib/build.js either way (Bun maps .js -> .ts for source trees).
+    const exists = async (rel: string[]): Promise<boolean> => {
+      try {
+        await readFile(path.join(candidate, ...rel));
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    if (await exists(['spec', 'lib', 'build.ts'])) return candidate;
+    if (await exists(['spec', 'lib', 'build.js'])) return candidate;
   }
   throw new Error(
     `Engine checkout not found for ${lock.repository}@${lock.commit.slice(0, 7)}. ` +
