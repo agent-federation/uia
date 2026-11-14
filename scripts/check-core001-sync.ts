@@ -11,11 +11,13 @@
  *     bun.lock as in the consumer package.json (the cross-lock invariant).
  *
  * Requires the engine checkout to be materialized (CI materializes it first; locally see
- * contracts/core-001/README.md). Exit code 1 on any mismatch, so it can run in CI.
+ * contracts/core-001/README.md) and enforces the same pin as the build harness via the
+ * shared verifyEnginePin. Exit code 1 on any mismatch, so it can run in CI.
  */
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { verifyEnginePin } from '../contracts/core-001/engine-pin.js';
 
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 
@@ -100,6 +102,9 @@ async function main(): Promise<number> {
     // same version the consumer pins (e.g. nunjucks 3.2.4 in both bun.lock files).
     try {
       const engineRoot = await resolveEngineRoot(lock);
+      // Same pin enforcement as the build harness: the cross-lock read below is only
+      // meaningful for the exact pinned checkout.
+      await verifyEnginePin(engineRoot, lock);
       const bunLock = await readFile(path.join(engineRoot, 'bun.lock'), 'utf8');
       for (const [name, declared] of Object.entries(profile.dependencies ?? {})) {
         const resolved = resolvedVersionFromBunLock(bunLock, name);

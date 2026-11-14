@@ -25,7 +25,7 @@ Or clone anywhere and point the harness at it: `export UIA_ENGINE_ROOT=/path/to/
 ## Commands
 
 ```bash
-bun run check:core001:sync   # profile deps <-> package.json <-> engine bun.lock (nunjucks etc.)
+bun run check:core001:sync   # pin check + profile deps <-> package.json <-> engine bun.lock
 bun run core001:check        # build with the pinned engine; committed artifact must match byte-for-byte
 bun run core001:build        # rebuild contracts/core-001/output/CORE-001.draft.md and commit it
 ```

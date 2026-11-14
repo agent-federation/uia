@@ -16,6 +16,7 @@ import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/pr
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { verifyEnginePin } from './engine-pin.js';
 // Type-only views of the pinned engine's API. Resolved at typecheck time through the
 // materialized engine checkout (see rootDirs / .gitignore); at runtime the modules are
 // imported from the resolved engine root below.
@@ -75,55 +76,6 @@ async function resolveEngineRoot(lock: EngineLock): Promise<string> {
       `Clone it to "${path.join(REPO_ROOT, 'contract-builder')}" and materialize the pinned ` +
       `commit (see contracts/core-001/README.md), or set UIA_ENGINE_ROOT. ` +
       `Checked: ${candidates.join(', ')}`,
-  );
-}
-
-/**
- * Fails closed unless the resolved checkout is exactly the pinned engine: its git HEAD must
- * equal engine.lock.json.commit and its package version must equal engine.lock.json.version.
- * Set UIA_ALLOW_UNPINNED_ENGINE=1 to develop against a different checkout; the mismatch is
- * then reported as a warning instead of an error.
- */
-async function verifyEnginePin(candidate: string, lock: EngineLock): Promise<void> {
-  const problems: string[] = [];
-
-  const { execFile } = await import('node:child_process');
-  const gitHead = await new Promise<string>((resolve) => {
-    execFile('git', ['-C', candidate, 'rev-parse', 'HEAD'], (error, stdout) => {
-      resolve(error ? '' : stdout.trim());
-    });
-  });
-  if (gitHead === '') {
-    problems.push('not a git checkout (cannot read HEAD)');
-  } else if (gitHead !== lock.commit) {
-    problems.push(
-      `HEAD is ${gitHead.slice(0, 7)}, lock pins ${lock.commit.slice(0, 7)}` +
-        ` — run "git -C ${candidate} fetch && git -C ${candidate} checkout ${lock.commit}"`,
-    );
-  }
-
-  try {
-    const pkg = JSON.parse(await readFile(path.join(candidate, 'package.json'), 'utf8')) as {
-      version?: string;
-    };
-    if (pkg.version !== lock.version) {
-      problems.push(`package version is ${pkg.version ?? 'unknown'}, lock pins ${lock.version}`);
-    }
-  } catch {
-    problems.push('package.json is unreadable');
-  }
-
-  if (problems.length === 0) return;
-  const message =
-    `Engine checkout at ${candidate} does not match engine.lock.json:\n` +
-    problems.map((problem) => `  - ${problem}`).join('\n');
-  if (process.env.UIA_ALLOW_UNPINNED_ENGINE === '1') {
-    console.error(`WARNING (UIA_ALLOW_UNPINNED_ENGINE=1): ${message}`);
-    return;
-  }
-  throw new Error(
-    `${message}\nMaterialize the pinned commit (contracts/core-001/README.md) or set ` +
-      `UIA_ALLOW_UNPINNED_ENGINE=1 for unpinned development.`,
   );
 }
 
