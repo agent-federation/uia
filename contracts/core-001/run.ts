@@ -12,10 +12,15 @@
  *   bun contracts/core-001/run.ts --write    # refresh the committed artifact from the temp build
  *   bun contracts/core-001/run.ts --check    # same as the default comparison mode
  */
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+// Type-only views of the pinned engine's API. Resolved at typecheck time through the
+// materialized engine checkout (see rootDirs / .gitignore); at runtime the modules are
+// imported from the resolved engine root below.
+import type * as engineBuild from '../../contract-builder/spec/lib/build.js';
+import type * as engineRenderers from '../../contract-builder/spec/cli-renderers.js';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -85,8 +90,16 @@ async function prepareWorkspace(engineRoot: string): Promise<{ root: string; pro
   await cp(path.join(REPO_ROOT, 'docs', 'CORE-001.md'), path.join(root, 'docs', 'CORE-001.md'));
   // The engine reads its own bun.lock (engineRoot/bun.lock) for the profile closure preflight,
   // never the consumer's. Mirror the real dependency tree instead of copying a lockfile whose
-  // integrity entries would not match this machine's node_modules.
-  await cp(path.join(engineRoot, 'node_modules'), path.join(root, 'node_modules'), { recursive: true });
+  // integrity entries would not match this machine's node_modules. A symlink is instantaneous
+  // and shares the tree; fall back to a recursive copy only if symlinking fails (e.g. on a
+  // platform or filesystem that refuses directory symlinks).
+  const engineNodeModules = path.join(engineRoot, 'node_modules');
+  const workspaceNodeModules = path.join(root, 'node_modules');
+  try {
+    await symlink(engineNodeModules, workspaceNodeModules, 'dir');
+  } catch {
+    await cp(engineNodeModules, workspaceNodeModules, { recursive: true });
+  }
   return { root, projectDir };
 }
 
@@ -99,12 +112,12 @@ async function main(argv: string[]): Promise<number> {
   const lock = await loadEngineLock();
   const engineRoot = await resolveEngineRoot(lock);
 
-  const { runBuild } = (await import(
-    pathToFileURL(path.join(engineRoot, 'spec', 'lib', 'build.js')).href
-  )) as typeof import('@/../contract-builder/spec/lib/build.js');
+  const { runBuild } = (await import(pathToFileURL(path.join(engineRoot, 'spec', 'lib', 'build.js')).href)) as {
+    runBuild: typeof engineBuild.runBuild;
+  };
   const { loadProfileRenderers } = (await import(
     pathToFileURL(path.join(engineRoot, 'spec', 'cli-renderers.js')).href
-  )) as typeof import('@/../contract-builder/spec/cli-renderers.js');
+  )) as { loadProfileRenderers: typeof engineRenderers.loadProfileRenderers };
 
   const rendererModule = path.join(REPO_ROOT, 'profiles', 'core001', 'renderer.ts');
   const renderers = await loadProfileRenderers(true, HERE, {

@@ -1,4 +1,4 @@
-import type { ValidatorFinding } from '../../../spec/lib/hook.js';
+import type { ValidatorFinding } from '../../../contract-builder/spec/lib/hook.js';
 import type { AnalyzedProvision, Clause, NormativeEffect, Provision, SourceModality } from '../view.js';
 import type { Check, CheckContext } from '../context.js';
 import { collapse, normalizeText } from '../text.js';
@@ -75,7 +75,7 @@ export const check: Check = (ctx: CheckContext) => {
     findings.push(...markerFindings(provision, claimFlat, pointer));
 
     const allowed = ALLOWED_EFFECTS[provision.source_modality];
-    if (!allowed.includes(provision.normative_effect)) {
+    if (!allowed || !allowed.includes(provision.normative_effect)) {
       findings.push({
         code: 'ERR_MODALITY_UPGRADE',
         variant: 'provision',

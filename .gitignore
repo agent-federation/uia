@@ -1,3 +1,11 @@
 node_modules/
+build/
+.DS_Store
+.codex/
 .env
 .env.local
+# Engine checkout is materialized from contracts/core-001/engine.lock.json
+# (CI and run.ts resolve it via the lock's `checkout` path or UIA_ENGINE_ROOT);
+# it must never be committed as a gitlink. The entry also covers a local
+# symlink placed at this path for editor/typecheck resolution.
+contract-builder

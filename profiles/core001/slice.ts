@@ -1,4 +1,4 @@
-import { parseLocator } from '../../spec/lib/adapters/markdown.js';
+import { parseLocator } from '../../contract-builder/spec/lib/adapters/markdown.js';
 import type { Slice } from './view.js';
 
 /**

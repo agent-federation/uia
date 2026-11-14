@@ -5,8 +5,13 @@
  * validator consume them; the core only sees the entity envelope.
  */
 
-import type { Entity, ProjectModel, ProvenanceBinding, ProvenanceVerification } from '../../spec/lib/ir.js';
-import { notCheckedVerification } from '../../spec/lib/provenance.js';
+import type {
+  Entity,
+  ProjectModel,
+  ProvenanceBinding,
+  ProvenanceVerification,
+} from '../../contract-builder/spec/lib/ir.js';
+import { notCheckedVerification } from '../../contract-builder/spec/lib/provenance.js';
 import { normalizeText } from './text.js';
 
 export type SourceModality =

@@ -1,4 +1,4 @@
-import type { ValidatorFinding } from '../../../spec/lib/hook.js';
+import type { ValidatorFinding } from '../../../contract-builder/spec/lib/hook.js';
 import type { Check, CheckContext } from '../context.js';
 import { collapse } from '../text.js';
 

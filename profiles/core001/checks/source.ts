@@ -1,5 +1,5 @@
-import type { ValidatorFinding } from '../../../spec/lib/hook.js';
-import type { ProvenanceVerification } from '../../../spec/lib/ir.js';
+import type { ValidatorFinding } from '../../../contract-builder/spec/lib/hook.js';
+import type { ProvenanceVerification } from '../../../contract-builder/spec/lib/ir.js';
 import type { Check, CheckContext } from '../context.js';
 import { sectionInSlice } from '../slice.js';
 
@@ -75,7 +75,7 @@ export const check: Check = async (ctx: CheckContext) => {
   const { view, legacyText, legacyName } = ctx;
 
   const expectedHeader = `${view.source.document} (Rev ${view.source.revision})`;
-  if (!legacyText.slice(0, 500).includes(expectedHeader)) {
+  if (!legacyText.includes(expectedHeader)) {
     findings.push({
       code: 'ERR_SOURCE_REVISION_MISMATCH',
       location: { file: legacyName, pointer: '' },

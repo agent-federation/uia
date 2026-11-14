@@ -16,8 +16,11 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "bun test",
     "check:lockfile": "bun scripts/check-lockfile.ts",
+    "check:core001:sync": "bun scripts/check-core001-sync.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.core.json",
+    "core001:check": "bun contracts/core-001/run.ts --check",
+    "core001:build": "bun contracts/core-001/run.ts --write",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

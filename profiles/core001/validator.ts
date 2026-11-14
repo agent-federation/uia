@@ -1,4 +1,4 @@
-import type { ProfileValidator, ValidatorFinding, ValidatorContext } from '../../spec/lib/hook.js';
+import type { ProfileValidator, ValidatorFinding, ValidatorContext } from '../../contract-builder/spec/lib/hook.js';
 import type { Check, CheckContext } from './context.js';
 import type { AnalyzedSpec } from './view.js';
 import { check as cases } from './checks/cases.js';
