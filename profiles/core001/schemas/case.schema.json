@@ -22,10 +22,7 @@
         },
         "scenario": {
           "type": "object",
-          "required": [
-            "given",
-            "action"
-          ],
+          "required": ["given", "action"],
           "additionalProperties": false,
           "properties": {
             "given": {
@@ -43,18 +40,10 @@
           }
         },
         "expected_outcome": {
-          "enum": [
-            "satisfied",
-            "violated"
-          ]
+          "enum": ["satisfied", "violated"]
         },
         "source_determination": {
-          "enum": [
-            "determined",
-            "inferred",
-            "underdetermined",
-            "not_asserted_by_source"
-          ]
+          "enum": ["determined", "inferred", "underdetermined", "not_asserted_by_source"]
         },
         "expectation_basis": {
           "enum": [
@@ -74,23 +63,14 @@
         },
         "review": {
           "type": "object",
-          "required": [
-            "status",
-            "reviewed_by"
-          ],
+          "required": ["status", "reviewed_by"],
           "additionalProperties": false,
           "properties": {
             "status": {
-              "enum": [
-                "unreviewed",
-                "confirmed"
-              ]
+              "enum": ["unreviewed", "confirmed"]
             },
             "reviewed_by": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             }
           }
         },
@@ -118,31 +98,20 @@
     },
     {
       "type": "object",
-      "required": [
-        "relations"
-      ],
+      "required": ["relations"],
       "properties": {
         "relations": {
           "type": "object",
-          "required": [
-            "provision",
-            "rationaleFragment"
-          ],
+          "required": ["provision", "rationaleFragment"],
           "properties": {
             "provision": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }
             },
             "rationaleFragment": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }

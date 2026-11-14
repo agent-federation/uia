@@ -56,21 +56,10 @@
           }
         },
         "source_modality": {
-          "enum": [
-            "MUST",
-            "MUST_NOT",
-            "SHOULD",
-            "SHOULD_NOT",
-            "MAY",
-            "DECLARATIVE",
-            "DECLARATIVE_NEGATION"
-          ]
+          "enum": ["MUST", "MUST_NOT", "SHOULD", "SHOULD_NOT", "MAY", "DECLARATIVE", "DECLARATIVE_NEGATION"]
         },
         "modality_marker": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "normative_effect": {
           "enum": [
@@ -85,18 +74,11 @@
         },
         "classification_basis": {
           "type": "object",
-          "required": [
-            "kind",
-            "quote",
-            "text"
-          ],
+          "required": ["kind", "quote", "text"],
           "additionalProperties": false,
           "properties": {
             "kind": {
-              "enum": [
-                "explicit",
-                "editorial_inference"
-              ]
+              "enum": ["explicit", "editorial_inference"]
             },
             "quote": {
               "type": "string",
@@ -132,10 +114,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": [
-              "text",
-              "reason"
-            ],
+            "required": ["text", "reason"],
             "additionalProperties": false,
             "properties": {
               "text": {
@@ -153,11 +132,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": [
-              "target",
-              "in_scope",
-              "note"
-            ],
+            "required": ["target", "in_scope", "note"],
             "additionalProperties": false,
             "properties": {
               "target": {
@@ -196,35 +171,20 @@
     },
     "review": {
       "type": "object",
-      "required": [
-        "status",
-        "reviewed_by"
-      ],
+      "required": ["status", "reviewed_by"],
       "additionalProperties": false,
       "properties": {
         "status": {
-          "enum": [
-            "unreviewed",
-            "confirmed"
-          ]
+          "enum": ["unreviewed", "confirmed"]
         },
         "reviewed_by": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     },
     "clause": {
       "type": "object",
-      "required": [
-        "quote",
-        "text",
-        "source_modality",
-        "modality_marker",
-        "condition_kind"
-      ],
+      "required": ["quote", "text", "source_modality", "modality_marker", "condition_kind"],
       "additionalProperties": false,
       "properties": {
         "quote": {
@@ -236,38 +196,19 @@
           "minLength": 1
         },
         "source_modality": {
-          "enum": [
-            "MUST",
-            "MUST_NOT",
-            "SHOULD",
-            "SHOULD_NOT",
-            "MAY",
-            "DECLARATIVE",
-            "DECLARATIVE_NEGATION"
-          ]
+          "enum": ["MUST", "MUST_NOT", "SHOULD", "SHOULD_NOT", "MAY", "DECLARATIVE", "DECLARATIVE_NEGATION"]
         },
         "modality_marker": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "condition_kind": {
-          "enum": [
-            "necessary",
-            "temporal",
-            null
-          ]
+          "enum": ["necessary", "temporal", null]
         }
       }
     },
     "explication": {
       "type": "object",
-      "required": [
-        "kind",
-        "text",
-        "rationale"
-      ],
+      "required": ["kind", "text", "rationale"],
       "additionalProperties": false,
       "properties": {
         "kind": {
@@ -296,51 +237,32 @@
     },
     {
       "type": "object",
-      "required": [
-        "relations"
-      ],
+      "required": ["relations"],
       "properties": {
         "relations": {
           "type": "object",
-          "required": [
-            "fragment",
-            "terms",
-            "dependsOn",
-            "mentions"
-          ],
+          "required": ["fragment", "terms", "dependsOn", "mentions"],
           "properties": {
             "fragment": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }
             },
             "terms": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }
             },
             "dependsOn": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }
             },
             "mentions": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }

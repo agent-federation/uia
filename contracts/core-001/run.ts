@@ -12,13 +12,13 @@
  *   bun contracts/core-001/run.ts --write    # refresh the committed artifact from the temp build
  *   bun contracts/core-001/run.ts --check    # same as the default comparison mode
  */
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const HERE = fileURLToPath(new URL(".", import.meta.url));
-const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
+const HERE = fileURLToPath(new URL('.', import.meta.url));
+const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 interface EngineLock {
   schema: string;
@@ -28,29 +28,29 @@ interface EngineLock {
   checkout: string;
 }
 
-const COMMITTED_ARTIFACT = path.join(HERE, "output", "CORE-001.draft.md");
+const COMMITTED_ARTIFACT = path.join(HERE, 'output', 'CORE-001.draft.md');
 const PROJECT_FILES = [
-  "contract-builder.json",
-  "sources.yml",
-  "ontology.yml",
-  "semantics.json",
-  "decisions.yml",
-  "conformance/cases.yml",
+  'contract-builder.json',
+  'sources.yml',
+  'ontology.yml',
+  'semantics.json',
+  'decisions.yml',
+  'conformance/cases.yml',
 ] as const;
 
 async function loadEngineLock(): Promise<EngineLock> {
-  const raw = await readFile(path.join(HERE, "engine.lock.json"), "utf8");
+  const raw = await readFile(path.join(HERE, 'engine.lock.json'), 'utf8');
   return JSON.parse(raw) as EngineLock;
 }
 
 async function resolveEngineRoot(lock: EngineLock): Promise<string> {
   const candidates = [
-    process.env.UIA_ENGINE_ROOT ?? "",
+    process.env.UIA_ENGINE_ROOT ?? '',
     path.resolve(HERE, lock.checkout),
-    path.resolve(REPO_ROOT, "..", "contract-builder"),
+    path.resolve(REPO_ROOT, '..', 'contract-builder'),
   ].filter((candidate) => candidate.length > 0);
   for (const candidate of candidates) {
-    const buildLib = path.join(candidate, "spec", "lib", "build.ts");
+    const buildLib = path.join(candidate, 'spec', 'lib', 'build.ts');
     try {
       await readFile(buildLib);
       return candidate;
@@ -60,8 +60,8 @@ async function resolveEngineRoot(lock: EngineLock): Promise<string> {
   }
   throw new Error(
     `Engine checkout not found for ${lock.repository}@${lock.commit.slice(0, 7)}. ` +
-      `Clone it to "${path.join(REPO_ROOT, "contract-builder")}" or set UIA_ENGINE_ROOT. ` +
-      `Checked: ${candidates.join(", ")}`,
+      `Clone it to "${path.join(REPO_ROOT, 'contract-builder')}" or set UIA_ENGINE_ROOT. ` +
+      `Checked: ${candidates.join(', ')}`,
   );
 }
 
@@ -72,45 +72,41 @@ async function resolveEngineRoot(lock: EngineLock): Promise<string> {
  * valid, and engine-owned profile imports resolve from the explicit engine root.
  */
 async function prepareWorkspace(engineRoot: string): Promise<{ root: string; projectDir: string }> {
-  const root = await mkdtemp(path.join(tmpdir(), "uia-core001-"));
-  const projectDir = path.join(root, "contracts", "core-001");
+  const root = await mkdtemp(path.join(tmpdir(), 'uia-core001-'));
+  const projectDir = path.join(root, 'contracts', 'core-001');
   await mkdir(projectDir, { recursive: true });
   for (const file of PROJECT_FILES) {
     await cp(path.join(HERE, file), path.join(projectDir, file));
   }
-  await cp(path.join(REPO_ROOT, "profiles", "core001"), path.join(root, "profiles", "core001"), {
+  await cp(path.join(REPO_ROOT, 'profiles', 'core001'), path.join(root, 'profiles', 'core001'), {
     recursive: true,
   });
-  await mkdir(path.join(root, "docs"), { recursive: true });
-  await cp(path.join(REPO_ROOT, "docs", "CORE-001.md"), path.join(root, "docs", "CORE-001.md"));
+  await mkdir(path.join(root, 'docs'), { recursive: true });
+  await cp(path.join(REPO_ROOT, 'docs', 'CORE-001.md'), path.join(root, 'docs', 'CORE-001.md'));
   // The engine reads its own bun.lock (engineRoot/bun.lock) for the profile closure preflight,
   // never the consumer's. Mirror the real dependency tree instead of copying a lockfile whose
   // integrity entries would not match this machine's node_modules.
-  await cp(
-    path.join(engineRoot, "node_modules"),
-    path.join(root, "node_modules"),
-    { recursive: true },
-  );
+  await cp(path.join(engineRoot, 'node_modules'), path.join(root, 'node_modules'), { recursive: true });
   return { root, projectDir };
 }
 
 async function main(argv: string[]): Promise<number> {
-  const write = argv.includes("--write");
-  if (argv.some((arg) => !["--write", "--check"].includes(arg))) {
-    console.error("Usage: bun contracts/core-001/run.ts [--write|--check]");
+  const write = argv.includes('--write');
+  if (argv.some((arg) => !['--write', '--check'].includes(arg))) {
+    console.error('Usage: bun contracts/core-001/run.ts [--write|--check]');
     return 1;
   }
   const lock = await loadEngineLock();
   const engineRoot = await resolveEngineRoot(lock);
 
   const { runBuild } = (await import(
-    pathToFileURL(path.join(engineRoot, "spec", "lib", "build.js")).href
-  )) as typeof import("@/../contract-builder/spec/lib/build.js");
+    pathToFileURL(path.join(engineRoot, 'spec', 'lib', 'build.js')).href
+  )) as typeof import('@/../contract-builder/spec/lib/build.js');
   const { loadProfileRenderers } = (await import(
-    pathToFileURL(path.join(engineRoot, "spec", "cli-renderers.js")).href
-  )) as typeof import("@/../contract-builder/spec/cli-renderers.js");
+    pathToFileURL(path.join(engineRoot, 'spec', 'cli-renderers.js')).href
+  )) as typeof import('@/../contract-builder/spec/cli-renderers.js');
 
-  const rendererModule = path.join(REPO_ROOT, "profiles", "core001", "renderer.ts");
+  const rendererModule = path.join(REPO_ROOT, 'profiles', 'core001', 'renderer.ts');
   const renderers = await loadProfileRenderers(true, HERE, {
     rendererModule,
     engineRoot,
@@ -126,7 +122,7 @@ async function main(argv: string[]): Promise<number> {
   try {
     const result = await runBuild({
       specDir: projectDir,
-      mode: "draft",
+      mode: 'draft',
       write: true,
       check: false,
       strict: false,
@@ -138,13 +134,11 @@ async function main(argv: string[]): Promise<number> {
       console.error(`[${diagnostic.severity}] ${diagnostic.code}`);
     }
     if (result.exitCode !== 0 || result.blockedBy !== null) {
-      console.error(
-        `Build blocked (exit ${result.exitCode}, blockedBy=${result.blockedBy ?? "null"})`,
-      );
+      console.error(`Build blocked (exit ${result.exitCode}, blockedBy=${result.blockedBy ?? 'null'})`);
       return 1;
     }
 
-    const generatedPath = path.join(projectDir, "output", "CORE-001.draft.md");
+    const generatedPath = path.join(projectDir, 'output', 'CORE-001.draft.md');
     const generated = await readFile(generatedPath);
     if (write) {
       await mkdir(path.dirname(COMMITTED_ARTIFACT), { recursive: true });

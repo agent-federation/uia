@@ -1,5 +1,5 @@
-import type { ValidatorFinding } from "../../../spec/lib/hook.js";
-import type { Check, CheckContext } from "../context.js";
+import type { ValidatorFinding } from '../../../spec/lib/hook.js';
+import type { Check, CheckContext } from '../context.js';
 
 export const check: Check = (ctx: CheckContext) => {
   const findings: ValidatorFinding[] = [];
@@ -8,36 +8,33 @@ export const check: Check = (ctx: CheckContext) => {
     const pointer = `/provisions/${index}`;
 
     const provisionReview = provision.review;
-    if (provision.normalization_status !== "verbatim" && provisionReview?.status !== "confirmed") {
+    if (provision.normalization_status !== 'verbatim' && provisionReview?.status !== 'confirmed') {
       findings.push({
-        code: "REVIEW_NORMALIZATION_PENDING",
+        code: 'REVIEW_NORMALIZATION_PENDING',
         entityId: provision.id,
-        location: { file: "semantics.json", pointer: `${pointer}/normalized_statement` },
+        location: { file: 'semantics.json', pointer: `${pointer}/normalized_statement` },
         data: { id: provision.id },
       });
     }
 
-    if (
-      provision.classification_basis?.kind === "editorial_inference" &&
-      provisionReview?.status !== "confirmed"
-    ) {
+    if (provision.classification_basis?.kind === 'editorial_inference' && provisionReview?.status !== 'confirmed') {
       findings.push({
-        code: "REVIEW_EFFECT_CLASSIFICATION",
+        code: 'REVIEW_EFFECT_CLASSIFICATION',
         entityId: provision.id,
-        location: { file: "semantics.json", pointer: `${pointer}/classification_basis` },
+        location: { file: 'semantics.json', pointer: `${pointer}/classification_basis` },
         data: { effect: provision.normative_effect },
       });
     }
 
     if (
-      provisionReview?.status === "confirmed" &&
+      provisionReview?.status === 'confirmed' &&
       (provisionReview.reviewed_by === null || provisionReview.reviewed_by === undefined)
     ) {
       findings.push({
-        code: "WARN_REVIEW_WITHOUT_REVIEWER",
-        variant: "provision",
+        code: 'WARN_REVIEW_WITHOUT_REVIEWER',
+        variant: 'provision',
         entityId: provision.id,
-        location: { file: "semantics.json", pointer: `${pointer}/review/reviewed_by` },
+        location: { file: 'semantics.json', pointer: `${pointer}/review/reviewed_by` },
         data: { id: provision.id },
       });
     }
@@ -46,14 +43,14 @@ export const check: Check = (ctx: CheckContext) => {
   for (const [index, testCase] of ctx.view.cases.entries()) {
     const caseReview = testCase.review;
     if (
-      caseReview?.status === "confirmed" &&
+      caseReview?.status === 'confirmed' &&
       (caseReview.reviewed_by === null || caseReview.reviewed_by === undefined)
     ) {
       findings.push({
-        code: "WARN_REVIEW_WITHOUT_REVIEWER",
-        variant: "case",
+        code: 'WARN_REVIEW_WITHOUT_REVIEWER',
+        variant: 'case',
         entityId: testCase.id,
-        location: { file: "conformance/cases.yml", pointer: `/cases/${index}/review/reviewed_by` },
+        location: { file: 'conformance/cases.yml', pointer: `/cases/${index}/review/reviewed_by` },
         data: { id: testCase.id },
       });
     }

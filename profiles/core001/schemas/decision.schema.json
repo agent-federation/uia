@@ -27,23 +27,13 @@
           "minLength": 1
         },
         "status": {
-          "enum": [
-            "open",
-            "resolved",
-            "rejected"
-          ]
+          "enum": ["open", "resolved", "rejected"]
         },
         "scope": {
-          "enum": [
-            "normative",
-            "editorial"
-          ]
+          "enum": ["normative", "editorial"]
         },
         "resolution": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "source": {
           "type": "string",

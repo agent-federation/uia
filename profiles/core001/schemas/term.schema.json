@@ -5,12 +5,7 @@
   "$defs": {
     "base": {
       "type": "object",
-      "required": [
-        "id",
-        "name",
-        "definition",
-        "source_ref"
-      ],
+      "required": ["id", "name", "definition", "source_ref"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -56,21 +51,14 @@
     },
     {
       "type": "object",
-      "required": [
-        "relations"
-      ],
+      "required": ["relations"],
       "properties": {
         "relations": {
           "type": "object",
-          "required": [
-            "fragment"
-          ],
+          "required": ["fragment"],
           "properties": {
             "fragment": {
-              "type": [
-                "string",
-                "array"
-              ],
+              "type": ["string", "array"],
               "items": {
                 "type": "string"
               }

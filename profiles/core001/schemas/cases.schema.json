@@ -3,9 +3,7 @@
   "$id": "https://core001.local/schemas/cases.schema.json",
   "title": "Conformance: declarative vectors",
   "type": "object",
-  "required": [
-    "cases"
-  ],
+  "required": ["cases"],
   "additionalProperties": false,
   "properties": {
     "cases": {

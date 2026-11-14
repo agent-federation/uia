@@ -3,9 +3,7 @@
   "$id": "https://core001.local/schemas/decisions.schema.json",
   "title": "Decisions: open, resolved and rejected",
   "type": "object",
-  "required": [
-    "decisions"
-  ],
+  "required": ["decisions"],
   "additionalProperties": false,
   "properties": {
     "decisions": {

@@ -1,5 +1,5 @@
-import { parseLocator } from "../../spec/lib/adapters/markdown.js";
-import type { Slice } from "./view.js";
+import { parseLocator } from '../../spec/lib/adapters/markdown.js';
+import type { Slice } from './view.js';
 
 /**
  * Slice containment needs the locator's section, not quote verification. Verification goes
@@ -16,9 +16,9 @@ export function sectionInSlice(ref: string, slice: Slice | undefined | null): bo
 }
 
 function segmentMatches(section: string, prefix: string): boolean {
-  const bare = prefix.replace(/^#/, "");
+  const bare = prefix.replace(/^#/, '');
   if (section === bare) return true;
   if (!section.startsWith(bare)) return false;
   const next = section.charAt(bare.length);
-  return next === "." || next === "/" || next === "-";
+  return next === '.' || next === '/' || next === '-';
 }

@@ -3,9 +3,7 @@
   "$id": "https://core001.local/schemas/semantics.schema.json",
   "title": "Semantics: normative provisions",
   "type": "object",
-  "required": [
-    "provisions"
-  ],
+  "required": ["provisions"],
   "additionalProperties": false,
   "properties": {
     "provisions": {

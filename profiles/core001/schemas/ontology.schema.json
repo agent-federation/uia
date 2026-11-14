@@ -3,22 +3,12 @@
   "$id": "https://core001.local/schemas/ontology.schema.json",
   "title": "Ontology: document header and terms",
   "type": "object",
-  "required": [
-    "document",
-    "terms"
-  ],
+  "required": ["document", "terms"],
   "additionalProperties": false,
   "properties": {
     "document": {
       "type": "object",
-      "required": [
-        "id",
-        "title",
-        "revision",
-        "source",
-        "slice",
-        "slice_title"
-      ],
+      "required": ["id", "title", "revision", "source", "slice", "slice_title"],
       "additionalProperties": false,
       "properties": {
         "id": {

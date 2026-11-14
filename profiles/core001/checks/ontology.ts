@@ -1,6 +1,6 @@
-import type { ValidatorFinding } from "../../../spec/lib/hook.js";
-import type { Check, CheckContext } from "../context.js";
-import { collapse } from "../text.js";
+import type { ValidatorFinding } from '../../../spec/lib/hook.js';
+import type { Check, CheckContext } from '../context.js';
+import { collapse } from '../text.js';
 
 export const check: Check = (ctx: CheckContext) => {
   const findings: ValidatorFinding[] = [];
@@ -12,9 +12,9 @@ export const check: Check = (ctx: CheckContext) => {
   const sourceRevision = ctx.view.source.revision;
   if (ontologyRevision !== sourceRevision) {
     findings.push({
-      code: "ERR_SOURCE_REVISION_MISMATCH",
-      variant: "ontology",
-      location: { file: "ontology.yml", pointer: "/document/revision" },
+      code: 'ERR_SOURCE_REVISION_MISMATCH',
+      variant: 'ontology',
+      location: { file: 'ontology.yml', pointer: '/document/revision' },
       data: {
         ontologyRevision,
         sourceRevision,
@@ -31,20 +31,20 @@ export const check: Check = (ctx: CheckContext) => {
 
     if (term.source_ref !== fragment.source_ref) {
       findings.push({
-        code: "ERR_SOURCE_REF_MISMATCH",
-        variant: "term",
+        code: 'ERR_SOURCE_REF_MISMATCH',
+        variant: 'term',
         entityId: term.id,
-        location: { file: "ontology.yml", pointer: `${pointer}/source_ref` },
+        location: { file: 'ontology.yml', pointer: `${pointer}/source_ref` },
         data: { sourceRef: term.source_ref, fragmentRef: fragment.source_ref },
       });
     }
 
     if (!collapse(fragment.quote).includes(collapse(term.definition))) {
       findings.push({
-        code: "ERR_QUOTE_NOT_IN_FRAGMENT",
-        variant: "term",
+        code: 'ERR_QUOTE_NOT_IN_FRAGMENT',
+        variant: 'term',
         entityId: term.id,
-        location: { file: "ontology.yml", pointer: `${pointer}/definition` },
+        location: { file: 'ontology.yml', pointer: `${pointer}/definition` },
         data: { id: term.id, fragment: term.fragment },
       });
     }

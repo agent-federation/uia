@@ -3,19 +3,12 @@
   "$id": "https://core001.local/schemas/sources.schema.json",
   "title": "Sources and verbatim fragments",
   "type": "object",
-  "required": [
-    "slice",
-    "fragments"
-  ],
+  "required": ["slice", "fragments"],
   "additionalProperties": false,
   "properties": {
     "slice": {
       "type": "object",
-      "required": [
-        "id",
-        "includes",
-        "excludes"
-      ],
+      "required": ["id", "includes", "excludes"],
       "additionalProperties": false,
       "properties": {
         "id": {

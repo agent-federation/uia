@@ -5,12 +5,7 @@
   "$defs": {
     "base": {
       "type": "object",
-      "required": [
-        "id",
-        "source",
-        "source_ref",
-        "quote"
-      ],
+      "required": ["id", "source", "source_ref", "quote"],
       "additionalProperties": false,
       "properties": {
         "id": {

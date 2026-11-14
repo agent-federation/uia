@@ -5,50 +5,35 @@
  * validator consume them; the core only sees the entity envelope.
  */
 
-import type {
-  Entity,
-  ProjectModel,
-  ProvenanceBinding,
-  ProvenanceVerification,
-} from "../../spec/lib/ir.js";
-import { notCheckedVerification } from "../../spec/lib/provenance.js";
-import { normalizeText } from "./text.js";
+import type { Entity, ProjectModel, ProvenanceBinding, ProvenanceVerification } from '../../spec/lib/ir.js';
+import { notCheckedVerification } from '../../spec/lib/provenance.js';
+import { normalizeText } from './text.js';
 
 export type SourceModality =
-  | "MUST"
-  | "MUST_NOT"
-  | "SHOULD"
-  | "SHOULD_NOT"
-  | "MAY"
-  | "DECLARATIVE"
-  | "DECLARATIVE_NEGATION";
+  'MUST' | 'MUST_NOT' | 'SHOULD' | 'SHOULD_NOT' | 'MAY' | 'DECLARATIVE' | 'DECLARATIVE_NEGATION';
 
 export type NormativeEffect =
-  | "obligation"
-  | "prohibition"
-  | "permission"
-  | "negative_entailment"
-  | "semantic_constraint"
-  | "scope_statement"
-  | "descriptive";
+  | 'obligation'
+  | 'prohibition'
+  | 'permission'
+  | 'negative_entailment'
+  | 'semantic_constraint'
+  | 'scope_statement'
+  | 'descriptive';
 
-export type ExpectedOutcome = "satisfied" | "violated";
+export type ExpectedOutcome = 'satisfied' | 'violated';
 
-export type SourceDetermination =
-  | "determined"
-  | "inferred"
-  | "underdetermined"
-  | "not_asserted_by_source";
+export type SourceDetermination = 'determined' | 'inferred' | 'underdetermined' | 'not_asserted_by_source';
 
 export type ExpectationBasis =
-  | "obligation"
-  | "prohibition"
-  | "permission"
-  | "permission_with_necessary_condition"
-  | "negative_entailment"
-  | "semantic_constraint"
-  | "scope_statement"
-  | "absent";
+  | 'obligation'
+  | 'prohibition'
+  | 'permission'
+  | 'permission_with_necessary_condition'
+  | 'negative_entailment'
+  | 'semantic_constraint'
+  | 'scope_statement'
+  | 'absent';
 
 export interface SourceDecl {
   id: string;
@@ -100,7 +85,7 @@ export interface OntologyDoc {
 }
 
 export interface Review {
-  status: "unreviewed" | "confirmed";
+  status: 'unreviewed' | 'confirmed';
   reviewed_by: string | null;
 }
 
@@ -109,22 +94,22 @@ export interface Clause {
   text: string;
   source_modality: SourceModality;
   modality_marker: string | null;
-  condition_kind: "necessary" | "temporal" | null;
+  condition_kind: 'necessary' | 'temporal' | null;
 }
 
 export interface Explication {
   kind:
-    | "modal_explication"
-    | "contrapositive"
-    | "typographic_normalization"
-    | "scope_explication"
-    | "model_to_implementation";
+    | 'modal_explication'
+    | 'contrapositive'
+    | 'typographic_normalization'
+    | 'scope_explication'
+    | 'model_to_implementation';
   text: string;
   rationale: string;
 }
 
 export interface ClassificationBasis {
-  kind: "explicit" | "editorial_inference";
+  kind: 'explicit' | 'editorial_inference';
   quote: string;
   text: string;
 }
@@ -170,8 +155,8 @@ export interface SemanticsDoc {
 export interface Decision {
   id: string;
   question: string;
-  status: "open" | "resolved" | "rejected";
-  scope: "normative" | "editorial";
+  status: 'open' | 'resolved' | 'rejected';
+  scope: 'normative' | 'editorial';
   resolution: string | null;
   source: string;
   source_ref: string;
@@ -207,8 +192,8 @@ export interface RawSpec {
   cases: CasesDoc;
 }
 
-export type NormalizationStatus = "verbatim" | "paraphrase_reviewed" | "paraphrase_pending";
-export type Applicability = "determined" | "decision_dependent";
+export type NormalizationStatus = 'verbatim' | 'paraphrase_reviewed' | 'paraphrase_pending';
+export type Applicability = 'determined' | 'decision_dependent';
 
 export interface AnalyzedProvision extends Provision {
   normalization_status: NormalizationStatus;
@@ -261,13 +246,13 @@ export interface AnalyzedSpec {
 }
 
 /** Documents the view needs; the core checks them before calling `buildView`. */
-export const requires = ["sources", "ontology"];
+export const requires = ['sources', 'ontology'];
 
 const BINDING_EFFECTS = new Set<NormativeEffect>([
-  "obligation",
-  "prohibition",
-  "negative_entailment",
-  "semantic_constraint",
+  'obligation',
+  'prohibition',
+  'negative_entailment',
+  'semantic_constraint',
 ]);
 
 /** Projection of the generic model into the CORE-001 document view, including derived values. */
@@ -275,10 +260,10 @@ export function buildView(model: ProjectModel): AnalyzedSpec {
   const sourcesDocument = model.documents.sources as SourcesDoc;
   const ontologyDocument = model.documents.ontology as OntologyDoc;
 
-  const fragments = byKind(model, "fragment").map(toFragment);
-  const terms = byKind(model, "term").map(toTerm);
-  const decisions = byKind(model, "decision").map(toDecision);
-  const cases = byKind(model, "case").map(toCase);
+  const fragments = byKind(model, 'fragment').map(toFragment);
+  const terms = byKind(model, 'term').map(toTerm);
+  const decisions = byKind(model, 'decision').map(toDecision);
+  const cases = byKind(model, 'case').map(toCase);
 
   const termById = new Map(terms.map((term) => [term.id, term]));
   const fragmentById = new Map(fragments.map((fragment) => [fragment.id, fragment]));
@@ -286,15 +271,14 @@ export function buildView(model: ProjectModel): AnalyzedSpec {
   const caseById = new Map(cases.map((testCase) => [testCase.id, testCase]));
   const lineage = provenanceOf(model);
 
-  const provisions: AnalyzedProvision[] = byKind(model, "provision").map((entity) => {
+  const provisions: AnalyzedProvision[] = byKind(model, 'provision').map((entity) => {
     const provision = toProvision(entity);
-    const verbatim =
-      normalizeText(provision.normalized_statement) === normalizeText(provision.source_quote);
+    const verbatim = normalizeText(provision.normalized_statement) === normalizeText(provision.source_quote);
     const normalizationStatus: NormalizationStatus = verbatim
-      ? "verbatim"
-      : provision.review?.status === "confirmed"
-        ? "paraphrase_reviewed"
-        : "paraphrase_pending";
+      ? 'verbatim'
+      : provision.review?.status === 'confirmed'
+        ? 'paraphrase_reviewed'
+        : 'paraphrase_pending';
     const resolvedDependencies = resolveDecisions(entity.relations.dependsOn, decisionById);
     const resolvedMentions = resolveDecisions(entity.relations.mentions, decisionById);
     const vectors = (entity.relations.vectors ?? [])
@@ -304,23 +288,21 @@ export function buildView(model: ProjectModel): AnalyzedSpec {
     return {
       ...provision,
       normalization_status: normalizationStatus,
-      applicability: resolvedDependencies.some((decision) => decision.status === "open")
-        ? "decision_dependent"
-        : "determined",
+      applicability: resolvedDependencies.some((decision) => decision.status === 'open')
+        ? 'decision_dependent'
+        : 'determined',
       binding: BINDING_EFFECTS.has(provision.normative_effect),
-      normative_relevance: provision.normative_effect !== "descriptive",
+      normative_relevance: provision.normative_effect !== 'descriptive',
       cases: vectors,
-      violated_cases: vectors.filter((testCase) => testCase.expected_outcome === "violated").length,
-      resolved_terms: provision.terms
-        .map((id) => termById.get(id))
-        .filter((term): term is Term => term !== undefined),
+      violated_cases: vectors.filter((testCase) => testCase.expected_outcome === 'violated').length,
+      resolved_terms: provision.terms.map((id) => termById.get(id)).filter((term): term is Term => term !== undefined),
       resolved_dependencies: resolvedDependencies,
       resolved_mentions: resolvedMentions,
       fragment_resolved: fragmentById.get(provision.fragment) ?? {
         id: provision.fragment,
-        source: "",
-        source_ref: "",
-        quote: "",
+        source: '',
+        source_ref: '',
+        quote: '',
       },
     };
   });
@@ -328,8 +310,8 @@ export function buildView(model: ProjectModel): AnalyzedSpec {
   return {
     document: ontologyDocument.document,
     source: legacySources(model)[0] ?? {
-      id: "SRC-UNKNOWN",
-      path: "",
+      id: 'SRC-UNKNOWN',
+      path: '',
       document: ontologyDocument.document.id,
       revision: ontologyDocument.document.revision,
     },
@@ -346,8 +328,8 @@ export function buildView(model: ProjectModel): AnalyzedSpec {
       provisions: provisions.length,
       binding: provisions.filter((provision) => provision.binding).length,
       cases: cases.length,
-      reviewed: provisions.filter((provision) => provision.review?.status === "confirmed").length,
-      openDecisions: decisions.filter((decision) => decision.status === "open").length,
+      reviewed: provisions.filter((provision) => provision.review?.status === 'confirmed').length,
+      openDecisions: decisions.filter((decision) => decision.status === 'open').length,
     },
   };
 }
@@ -369,9 +351,7 @@ function provenanceOf(model: ProjectModel): ProvenanceEntry[] {
       entity: entity.id,
       kind: entity.kind,
       binding,
-      verification:
-        entity.verification ??
-        notCheckedVerification(entity.id, binding.source, binding.ref, null),
+      verification: entity.verification ?? notCheckedVerification(entity.id, binding.source, binding.ref, null),
     });
   }
   return entries;
@@ -389,33 +369,28 @@ function countProvenance(entries: readonly ProvenanceEntry[]): ProvenanceCounts 
   return counts;
 }
 
-function resolveDecisions(
-  ids: readonly string[] | undefined,
-  byId: ReadonlyMap<string, Decision>,
-): Decision[] {
-  return (ids ?? [])
-    .map((id) => byId.get(id))
-    .filter((decision): decision is Decision => decision !== undefined);
+function resolveDecisions(ids: readonly string[] | undefined, byId: ReadonlyMap<string, Decision>): Decision[] {
+  return (ids ?? []).map((id) => byId.get(id)).filter((decision): decision is Decision => decision !== undefined);
 }
 
 function toFragment(entity: Entity): Fragment {
-  return { ...(entity.fields as unknown as Omit<Fragment, "id">), id: entity.id };
+  return { ...(entity.fields as unknown as Omit<Fragment, 'id'>), id: entity.id };
 }
 
 function toTerm(entity: Entity): Term {
-  const fields = entity.fields as unknown as Omit<Term, "id" | "fragment">;
-  return { ...fields, id: entity.id, fragment: firstRelation(entity, "fragment") };
+  const fields = entity.fields as unknown as Omit<Term, 'id' | 'fragment'>;
+  return { ...fields, id: entity.id, fragment: firstRelation(entity, 'fragment') };
 }
 
 function toProvision(entity: Entity): Provision {
   const fields = entity.fields as unknown as Omit<
     Provision,
-    "id" | "fragment" | "terms" | "decision_dependencies" | "decision_mentions"
+    'id' | 'fragment' | 'terms' | 'decision_dependencies' | 'decision_mentions'
   >;
   return {
     ...fields,
     id: entity.id,
-    fragment: firstRelation(entity, "fragment"),
+    fragment: firstRelation(entity, 'fragment'),
     terms: entity.relations.terms ?? [],
     decision_dependencies: entity.relations.dependsOn ?? [],
     decision_mentions: entity.relations.mentions ?? [],
@@ -426,28 +401,28 @@ function toProvision(entity: Entity): Provision {
 }
 
 function toDecision(entity: Entity): Decision {
-  return { ...(entity.fields as unknown as Omit<Decision, "id">), id: entity.id };
+  return { ...(entity.fields as unknown as Omit<Decision, 'id'>), id: entity.id };
 }
 
 function toCase(entity: Entity): Case {
-  const fields = entity.fields as unknown as Omit<Case, "id" | "provision" | "rationale_fragment">;
+  const fields = entity.fields as unknown as Omit<Case, 'id' | 'provision' | 'rationale_fragment'>;
   return {
     ...fields,
     id: entity.id,
-    provision: firstRelation(entity, "provision"),
-    rationale_fragment: firstRelation(entity, "rationaleFragment"),
+    provision: firstRelation(entity, 'provision'),
+    rationale_fragment: firstRelation(entity, 'rationaleFragment'),
   };
 }
 
 function firstRelation(entity: Entity, name: string): string {
-  return entity.relations[name]?.[0] ?? "";
+  return entity.relations[name]?.[0] ?? '';
 }
 
 function legacySources(model: ProjectModel): SourceDecl[] {
   return (model.manifest.sources ?? []).map((source) => ({
     id: source.id,
     path: source.path,
-    document: source.identity?.document ?? "",
-    revision: source.identity?.revision ?? "",
+    document: source.identity?.document ?? '',
+    revision: source.identity?.revision ?? '',
   }));
 }

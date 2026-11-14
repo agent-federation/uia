@@ -1,9 +1,9 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import nunjucks from "nunjucks";
-import { SEVERITY_LABEL, type Diagnostic, type Severity } from "../../spec/lib/diagnostics.js";
-import type { ProjectModel } from "../../spec/lib/ir.js";
-import { artifactFrom, type RenderOptions, type Renderer } from "../../spec/lib/render.js";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import nunjucks from 'nunjucks';
+import { SEVERITY_LABEL, type Diagnostic, type Severity } from '../../spec/lib/diagnostics.js';
+import type { ProjectModel } from '../../spec/lib/ir.js';
+import { artifactFrom, type RenderOptions, type Renderer } from '../../spec/lib/render.js';
 import {
   buildView,
   type AnalyzedProvision,
@@ -12,7 +12,7 @@ import {
   type Clause,
   type Decision,
   type Explication,
-} from "./view.js";
+} from './view.js';
 
 class MemoryLoader extends nunjucks.Loader {
   readonly async = false;
@@ -31,26 +31,20 @@ class MemoryLoader extends nunjucks.Loader {
 
 const label = (options: RenderOptions, key: string): string => {
   const value = options.labels?.[key];
-  return typeof value === "string" ? value : key;
+  return typeof value === 'string' ? value : key;
 };
 
 export const renderer: Renderer = {
-  id: "core001-markdown",
-  version: "0.1.0",
+  id: 'core001-markdown',
+  version: '0.1.0',
   closure: {
-    root: fileURLToPath(new URL(".", import.meta.url)),
-    files: [
-      "renderer.ts",
-      "view.ts",
-      "text.ts",
-      "templates/core001.md.j2",
-      "labels.ru.json",
-    ],
-    dependencies: { nunjucks: "3.2.4" },
+    root: fileURLToPath(new URL('.', import.meta.url)),
+    files: ['renderer.ts', 'view.ts', 'text.ts', 'templates/core001.md.j2', 'labels.ru.json'],
+    dependencies: { nunjucks: '3.2.4' },
   },
   async render(model: ProjectModel, options: RenderOptions) {
     const spec = buildView(model);
-    const legacyName = path.basename(model.manifest.sources?.[0]?.path ?? "source");
+    const legacyName = path.basename(model.manifest.sources?.[0]?.path ?? 'source');
 
     const env = new nunjucks.Environment(new MemoryLoader(options.templates.files), {
       autoescape: false,
@@ -59,27 +53,22 @@ export const renderer: Renderer = {
       throwOnUndefined: true,
     });
 
-    env.addFilter("blockquote", (value: unknown) => {
-      if (value == null) return "";
+    env.addFilter('blockquote', (value: unknown) => {
+      if (value == null) return '';
       return String(value)
-        .split("\n")
-        .map((line) => (line.length > 0 ? `> ${line}` : ">"))
-        .join("\n");
+        .split('\n')
+        .map((line) => (line.length > 0 ? `> ${line}` : '>'))
+        .join('\n');
     });
 
     const view = toTemplateView(spec, options, legacyName, model);
     const text = finalize(env.render(options.templates.entry, view));
-    const output = model.manifest.render[0]?.outputs[options.mode] ?? "";
+    const output = model.manifest.render[0]?.outputs[options.mode] ?? '';
     return [artifactFrom(output, text)];
   },
 };
 
-function toTemplateView(
-  spec: AnalyzedSpec,
-  options: RenderOptions,
-  legacyName: string,
-  model: ProjectModel,
-) {
+function toTemplateView(spec: AnalyzedSpec, options: RenderOptions, legacyName: string, model: ProjectModel) {
   const localDiagnostics = options.diagnostics.map((diagnostic: Diagnostic) => ({
     code: diagnostic.code,
     severity: diagnostic.severity,
@@ -91,18 +80,16 @@ function toTemplateView(
 
   const counts = {
     ...spec.counts,
-    errors: countSeverity(options.diagnostics, "error"),
-    reviews: countSeverity(options.diagnostics, "review"),
-    warnings: countSeverity(options.diagnostics, "warning"),
+    errors: countSeverity(options.diagnostics, 'error'),
+    reviews: countSeverity(options.diagnostics, 'review'),
+    warnings: countSeverity(options.diagnostics, 'warning'),
   };
-  const verificationById = new Map(
-    spec.provenance.map((entry) => [entry.entity, entry.verification.status]),
-  );
+  const verificationById = new Map(spec.provenance.map((entry) => [entry.entity, entry.verification.status]));
 
   return {
     mode: options.mode,
     modeLabel: label(options, `mode.${options.mode}`),
-    isDraft: options.mode === "draft",
+    isDraft: options.mode === 'draft',
     profile: { id: model.profile.id, version: model.profile.version },
     renderer: { id: renderer.id, version: renderer.version },
     identity: options.identity,
@@ -115,8 +102,8 @@ function toTemplateView(
     },
     slice: {
       id: spec.slice.id,
-      includes: spec.slice.includes.join(", "),
-      excludes: spec.slice.excludes.join(", "),
+      includes: spec.slice.includes.join(', '),
+      excludes: spec.slice.excludes.join(', '),
     },
     counts,
     terms: spec.terms.map((term) => ({
@@ -135,7 +122,7 @@ function toTemplateView(
         kind: entry.kind,
         source: entry.binding.source,
         ref: entry.binding.ref,
-        bindingLabel: label(options, "provenance.binding"),
+        bindingLabel: label(options, 'provenance.binding'),
         status: entry.verification.status,
         outcome: entry.verification.record.outcome,
         method: entry.verification.record.method,
@@ -147,17 +134,17 @@ function toTemplateView(
     },
     trace: spec.provisions.map((provision) => ({
       fragmentId: provision.fragment,
-      fragmentVerification: verificationById.get(provision.fragment) ?? "unavailable",
+      fragmentVerification: verificationById.get(provision.fragment) ?? 'unavailable',
       sourceRef: provision.source_ref,
       provisionId: provision.id,
       decisions:
         provision.resolved_dependencies.length > 0
-          ? provision.resolved_dependencies.map((decision) => decision.id).join(", ")
-          : "—",
-      cases: provision.cases.map((testCase) => testCase.id).join(", "),
+          ? provision.resolved_dependencies.map((decision) => decision.id).join(', ')
+          : '—',
+      cases: provision.cases.map((testCase) => testCase.id).join(', '),
     })),
     diagnostics: localDiagnostics,
-    diagnosticsGroups: (["error", "review", "warning"] as Severity[]).map((severity) => ({
+    diagnosticsGroups: (['error', 'review', 'warning'] as Severity[]).map((severity) => ({
       severity,
       label: SEVERITY_LABEL[severity],
       items: localDiagnostics.filter((diagnostic) => diagnostic.severity === severity),
@@ -174,7 +161,7 @@ function provisionView(provision: AnalyzedProvision, options: RenderOptions) {
     sourceQuote: provision.source_quote,
     claimQuote: provision.claim_quote,
     normalizedStatement: provision.normalized_statement,
-    verbatim: provision.normalization_status === "verbatim",
+    verbatim: provision.normalization_status === 'verbatim',
     normalizationLabel: label(options, `normalization.${provision.normalization_status}`),
     normalizationStatus: provision.normalization_status,
     explications: provision.explications.map((explication) => explicationView(explication, options)),
@@ -187,15 +174,14 @@ function provisionView(provision: AnalyzedProvision, options: RenderOptions) {
     classificationQuote: provision.classification_basis.quote,
     classificationText: provision.classification_basis.text,
     binding: provision.binding,
-    bindingLabel: label(options, provision.binding ? "binding.yes" : "binding.no"),
+    bindingLabel: label(options, provision.binding ? 'binding.yes' : 'binding.no'),
     applicability: provision.applicability,
     applicabilityLabel: label(options, `applicability.${provision.applicability}`),
     reviewStatus: provision.review.status,
     reviewStatusLabel: label(options, `review.${provision.review.status}`),
     reviewedBy: provision.review.reviewed_by,
     terms: provision.resolved_terms.map((term) => ({ id: term.id, name: term.name })),
-    precondition:
-      provision.precondition == null ? null : clauseView(provision.precondition, options),
+    precondition: provision.precondition == null ? null : clauseView(provision.precondition, options),
     exception: provision.exception == null ? null : clauseView(provision.exception, options),
     dependencies: provision.resolved_dependencies.map((decision) => decisionView(decision, options)),
     mentions: provision.resolved_mentions.map((decision) => decisionView(decision, options)),
@@ -214,8 +200,7 @@ function clauseView(clause: Clause, options: RenderOptions) {
     sourceModality: clause.source_modality,
     modalityMarker: clause.modality_marker,
     conditionKind: clause.condition_kind,
-    conditionKindLabel:
-      clause.condition_kind == null ? null : label(options, `condition.${clause.condition_kind}`),
+    conditionKindLabel: clause.condition_kind == null ? null : label(options, `condition.${clause.condition_kind}`),
   };
 }
 
@@ -231,7 +216,7 @@ function explicationView(explication: Explication, options: RenderOptions) {
 function caseView(testCase: Case, options: RenderOptions) {
   return {
     id: testCase.id,
-    given: testCase.scenario.given.join("; "),
+    given: testCase.scenario.given.join('; '),
     action: testCase.scenario.action,
     outcome: testCase.expected_outcome,
     outcomeLabel: label(options, `outcome.${testCase.expected_outcome}`),
@@ -256,7 +241,7 @@ function decisionView(decision: Decision, options: RenderOptions) {
     resolution: decision.resolution,
     sourceRef: decision.source_ref,
     inScope: decision.in_scope,
-    inScopeLabel: label(options, decision.in_scope ? "inScope.yes" : "inScope.no"),
+    inScopeLabel: label(options, decision.in_scope ? 'inScope.yes' : 'inScope.no'),
   };
 }
 
@@ -266,8 +251,8 @@ function countSeverity(diagnostics: readonly Diagnostic[], severity: Severity): 
 
 function finalize(markdown: string): string {
   return markdown
-    .replace(/\r\n/g, "\n")
-    .replace(/[ \t]+$/gm, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .replace(/\n+$/g, "\n");
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\n+$/g, '\n');
 }

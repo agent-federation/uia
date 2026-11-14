@@ -81,9 +81,7 @@
       },
       "relations": {
         "fragment": "FRAG-10.2-P4-5-REVOCATION",
-        "terms": [
-          "TERM-SIGNED-AT"
-        ],
+        "terms": ["TERM-SIGNED-AT"],
         "dependsOn": [],
         "mentions": []
       }
@@ -136,13 +134,9 @@
       },
       "relations": {
         "fragment": "FRAG-10.1-P2-TRUST-CONDITION",
-        "terms": [
-          "TERM-SIGNED-AT"
-        ],
+        "terms": ["TERM-SIGNED-AT"],
         "dependsOn": [],
-        "mentions": [
-          "DEC-TRUSTED-TIME"
-        ]
+        "mentions": ["DEC-TRUSTED-TIME"]
       }
     },
     {
@@ -173,9 +167,7 @@
         "fragment": "FRAG-10.1-P5-NO-GLOBAL-TIME",
         "terms": [],
         "dependsOn": [],
-        "mentions": [
-          "DEC-TRUSTED-TIME"
-        ]
+        "mentions": ["DEC-TRUSTED-TIME"]
       }
     },
     {
@@ -204,10 +196,7 @@
       },
       "relations": {
         "fragment": "FRAG-10-P-NOT-INTERCHANGEABLE",
-        "terms": [
-          "TERM-ASSERTED-AT",
-          "TERM-SIGNED-AT"
-        ],
+        "terms": ["TERM-ASSERTED-AT", "TERM-SIGNED-AT"],
         "dependsOn": [],
         "mentions": []
       }
