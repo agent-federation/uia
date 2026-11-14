@@ -40,6 +40,10 @@ jobs:
           git clone --quiet "https://github.com/${repo}" contract-builder
           git -C contract-builder checkout --quiet "${commit}"
           cd contract-builder && bun install --frozen-lockfile --ignore-scripts
+          # The moved CORE-001 tests import profile modules directly; bun resolves their
+          # authored `../../spec/lib/...` engine imports at runtime through this root link
+          # (tsc resolves the same imports via the tsconfig rootDirs bridge).
+          ln -s contract-builder/spec spec
       - name: Verify CORE-001 dependency sync
         run: bun run check:core001:sync
       - name: Check formatting

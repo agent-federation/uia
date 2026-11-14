@@ -139,15 +139,41 @@ bun run build         # emit ./build
 
 Repository layout:
 
-| Path            | Contents                                                                      |
-| --------------- | ----------------------------------------------------------------------------- |
-| `src/core/`     | Runtime-independent domain core — no `node:*`, no `bun:*` imports             |
-| `src/adapters/` | Experimental reference adapters, outside the core semantics                   |
-| `src/index.ts`  | Public API barrel                                                             |
-| `tests/`        | Unit, conformance (§12), property and experimental suites (`bun:test`)        |
-| `docs/`         | Normative specification, PRD, architecture, roadmap, implementation reference |
-| `docs/audits/`  | Dated conformance audits, dispositions and decision registers                 |
-| `STATUS.md`     | Current stage, conformance status, readiness and open decisions               |
+| Path                  | Contents                                                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `src/core/`           | Runtime-independent domain core — no `node:*`, no `bun:*` imports                                                      |
+| `src/adapters/`       | Experimental reference adapters, outside the core semantics                                                            |
+| `src/index.ts`        | Public API barrel                                                                                                      |
+| `tests/`              | Unit, conformance (§12), property and experimental suites (`bun:test`)                                                 |
+| `docs/`               | Normative specification, PRD, architecture, roadmap, implementation reference                                          |
+| `docs/audits/`        | Dated conformance audits, dispositions and decision registers                                                          |
+| `STATUS.md`           | Current stage, conformance status, readiness and open decisions                                                        |
+| `contracts/core-001/` | CORE-001 contract project: manifest, inputs, fixtures, tests, harness — see its [README](contracts/core-001/README.md) |
+| `profiles/core001/`   | The consumer-owned `core001` rendering/validation profile                                                              |
+
+## CORE-001 contract project
+
+The contract project builds `contracts/core-001/output/CORE-001.draft.md` from
+`docs/CORE-001.md` with the contract-builder engine, pinned by
+`contracts/core-001/engine.lock.json`. The engine checkout is never committed; materialize
+it once per machine (full instructions: [`contracts/core-001/README.md`](contracts/core-001/README.md)):
+
+```bash
+bun run core001:check        # build with the pinned engine; artifact must match byte-for-byte
+bun run core001:build        # rebuild the committed artifact after input/profile edits
+bun run check:core001:sync   # profile deps <-> package.json <-> pinned engine bun.lock
+```
+
+Policy:
+
+- **Pin / drift**: the harness refuses to build with a checkout whose git HEAD or package
+  version differs from the lock (`UIA_ALLOW_UNPINNED_ENGINE=1` opts out for local
+  development only). CI materializes the exact pinned commit and enforces the artifact rule.
+- **Artifact rule**: the committed artifact is byte-identical to the pinned-engine build
+  except for two intended header lines (source filename, `inputDigest`); its hash is
+  recorded in `contracts/core-001/tests/golden/core001.draft.sha256`. Never hand-edit it.
+- **Source identity**: `docs/CORE-001.md` is canonical and unmodified (sha256 `f40876bb…`);
+  a contract-project test fails if the bytes change.
 
 ## Technology
 
