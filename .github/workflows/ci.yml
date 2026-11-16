@@ -29,6 +29,23 @@ jobs:
         run: bun install --frozen-lockfile --ignore-scripts
       - name: Verify lockfile is up to date
         run: bun run check:lockfile
+      # CORE-001: the dependency sync check cross-reads the engine's bun.lock, and the
+      # profile typecheck (rootDirs bridge) plus the artifact check need the pinned
+      # contract-builder engine checkout, materialized from engine.lock.json. The checkout
+      # is never committed (see .gitignore); CI always rebuilds it at the pin.
+      - name: Materialize pinned engine checkout
+        run: |
+          repo="$(jq -r .repository contracts/core-001/engine.lock.json)"
+          commit="$(jq -r .commit contracts/core-001/engine.lock.json)"
+          git clone --quiet "https://github.com/${repo}" contract-builder
+          git -C contract-builder checkout --quiet "${commit}"
+          (cd contract-builder && bun install --frozen-lockfile --ignore-scripts)
+          # The moved CORE-001 tests import profile modules directly; bun resolves their
+          # authored `../../spec/lib/...` engine imports at runtime through this root link
+          # (tsc resolves the same imports via the tsconfig rootDirs bridge).
+          ln -s contract-builder/spec spec
+      - name: Verify CORE-001 dependency sync
+        run: bun run check:core001:sync
       - name: Check formatting
         run: bun run format:check
       - name: Lint
@@ -39,3 +56,5 @@ jobs:
         run: bun test
       - name: Build
         run: bun run build
+      - name: CORE-001 pinned-engine build check
+        run: bun run core001:check

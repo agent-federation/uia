@@ -51,6 +51,13 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['build/**', 'node_modules/**', '.opencode/**', '.entire/**'],
+    ignores: [
+      'build/**',
+      'node_modules/**',
+      '.opencode/**',
+      '.entire/**',
+      'contracts/core-001/output/**',
+      'contract-builder/**',
+    ],
   },
 );
