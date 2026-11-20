@@ -114,4 +114,6 @@ async function main(): Promise<number> {
   return 1;
 }
 
-process.exitCode = await main();
+// Only execute when run as a script: the unit tests import this module for the pure
+// helpers and must not trigger the network query or set an exit code.
+if (import.meta.main) process.exitCode = await main();
