@@ -55,9 +55,10 @@ export function validateLock(lock: unknown): { lock?: EngineLock; problems: stri
 async function remoteHead(repository: string): Promise<string> {
   const url = `https://github.com/${repository}`;
   return await new Promise<string>((resolve, reject) => {
-    execFile('git', ['ls-remote', url, 'refs/heads/main'], (error, stdout) => {
+    execFile('git', ['ls-remote', url, 'refs/heads/main'], { timeout: 15000 }, (error, stdout, stderr) => {
       if (error) {
-        reject(new Error(`git ls-remote ${url} failed: ${error.message}`));
+        const details = stderr.trim() || error.message;
+        reject(new Error(`git ls-remote ${url} failed: ${details}`));
         return;
       }
       const match = stdout.match(/^([0-9a-f]{40})\trefs\/heads\/main$/m);
@@ -97,7 +98,13 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  const head = process.env.UIA_REMOTE_HEAD ?? (await remoteHead(pinned.repository));
+  let head: string;
+  try {
+    head = process.env.UIA_REMOTE_HEAD ?? (await remoteHead(pinned.repository));
+  } catch (error) {
+    console.error(`failed to resolve remote HEAD: ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
+  }
   if (!/^[0-9a-f]{40}$/.test(head)) {
     console.error(`remote main head is not a full 40-hex SHA: ${head}`);
     return 1;
