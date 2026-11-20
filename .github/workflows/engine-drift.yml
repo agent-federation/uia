@@ -1,0 +1,83 @@
+name: Engine drift
+
+# ODR-ENG-003 D6 / epic #220 E4: a scheduled check that reports when
+# agent-federation/contract-builder `main` has moved beyond the CORE-001 pin in
+# contracts/core-001/engine.lock.json. Drift is visible, not silent: the job fails
+# and opens/updates an issue labelled `tail` + `engine-drift`. The pin itself
+# advances only through a reviewed pull request — this workflow never edits the lock.
+
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: engine-drift
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    name: Compare engine pin with contract-builder main
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+      - name: Compare pin with contract-builder main
+        id: check
+        run: |
+          set +e
+          out="$(bun scripts/check-engine-drift.ts 2>&1)"
+          status=$?
+          echo "$out"
+          if [ "$status" -ne 0 ]; then
+            new_head="$(printf '%s\n' "$out" | sed -n 's/^pin is behind main: \([0-9a-f]\{40\}\)$/\1/p' | tail -1)"
+            echo "new_head=$new_head" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+      - name: Ensure drift labels exist
+        if: failure() && steps.check.outputs.new_head != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create tail --color d4c5f9 --description "Follow-up that must not be lost" --force
+          gh label create engine-drift --color fbca04 --description "contract-builder main moved beyond a UIA engine pin" --force
+      - name: Open or update the drift issue
+        if: failure() && steps.check.outputs.new_head != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW_HEAD: ${{ steps.check.outputs.new_head }}
+        run: |
+          old_head="$(jq -r .commit contracts/core-001/engine.lock.json)"
+          title="[engine-drift] contract-builder main moved beyond the CORE-001 pin"
+          body="$(cat <<EOF
+          \`contracts/core-001/engine.lock.json\` pins \`agent-federation/contract-builder\` @ \`${old_head}\`, but \`main\` is now at \`${NEW_HEAD}\` (nightly drift check, [ODR-ENG-003 D6](https://github.com/agent-federation/contract-builder/blob/main/docs/decisions/ODR-ENG-003-core-001-project-extraction.md)).
+
+          The pin advances only via a reviewed pull request that updates \`engine.lock.json\` (and \`version\`) — it is never updated automatically.
+
+          To move the pin: check out \`agent-federation/contract-builder\` at \`${NEW_HEAD}\`, re-run the CORE-001 suite (\`bun test\`, \`bun run core001:check\`) and the artifact rule, then update the lock in a PR.
+          EOF
+          )"
+          existing="$(gh issue list -R "$GITHUB_REPOSITORY" --label engine-drift --state open --limit 1 --json number -q '.[0].number')"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --label tail --label engine-drift --body "$body"
+          fi
+      - name: Close resolved drift issues
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pin="$(jq -r .commit contracts/core-001/engine.lock.json)"
+          for number in $(gh issue list -R "$GITHUB_REPOSITORY" --label engine-drift --state open --limit 20 --json number -q '.[].number'); do
+            gh issue close "$number" --comment "Drift resolved: the engine pin now matches contract-builder main (${pin})."
+          done
