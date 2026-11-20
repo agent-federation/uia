@@ -93,8 +93,14 @@ async function main(): Promise<number> {
   if (lock.schema !== 'uia-engine-lock/0.1') {
     fail(`engine.lock.json has unexpected schema ${lock.schema}`);
   }
+  if (lock.repository !== 'agent-federation/contract-builder') {
+    fail(`engine.lock.json repository must be "agent-federation/contract-builder", got ${lock.repository}`);
+  }
   if (!/^[0-9a-f]{40}$/.test(lock.commit)) {
     fail(`engine.lock.json commit is not a full 40-hex SHA: ${lock.commit}`);
+  }
+  if (typeof lock.version !== 'string' || lock.version.length === 0) {
+    fail('engine.lock.json version is missing');
   }
 
   if (!failed) {
