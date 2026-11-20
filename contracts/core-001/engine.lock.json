@@ -1,7 +1,7 @@
 {
   "schema": "uia-engine-lock/0.1",
   "repository": "agent-federation/contract-builder",
-  "commit": "694309940d4afa9035536b0ade6e047c6ac17d69",
+  "commit": "57d16dbc269a2371a888fe072f8cf755d17b2999",
   "version": "0.1.0",
   "checkout": "../../contract-builder"
 }
